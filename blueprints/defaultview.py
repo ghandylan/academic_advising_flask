@@ -27,9 +27,11 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
 
+        # if email and password are not empty
         if email and password:
             student = Student.query.filter_by(student_email=email, student_password=password).first()
             admin = Admin.query.filter_by(admin_email=email, admin_password=password).first()
+            # if student exists
             if student:
                 print(f'Student {student.student_name} has logged in')
                 login_user(student, remember=True)
