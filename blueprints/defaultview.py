@@ -27,33 +27,37 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
 
-        # if email and password are not empty
-        if email and password:
-            student = Student.query.filter_by(student_email=email, student_password=password).first()
-            admin = Admin.query.filter_by(admin_email=email, admin_password=password).first()
-            # if student exists
-            if student:
-                print(f'Student {student.student_name} has logged in')
-                login_user(student, remember=True)
-                # check if student is already in queue
-                queue = Queue.query.filter_by(admin_id=student.queue_ID).first()
-                if queue:
-                    return redirect(url_for('studentview.waiting_page'))
-                else:
-                    return redirect(url_for('studentview.student_dashboard'))
-            elif admin:
-                login_user(admin, remember=True)
-                admin.status = 'Online'
-                db.session.commit()
-                print(f'Admin {admin.admin_name} has logged in')
-                print(f'Admin {admin.admin_name} is online')
-                return redirect(url_for('adminview.admin_dashboard'))
-            else:
-                flash('Invalid email or password', 'warning')
-                return redirect(url_for('defaultview.login', error='Invalid email or password'))
-        else:
+        # if email or password are empty
+        if not email or password:
             flash('Email and password are required', 'error')
             return redirect(url_for('defaultview.login_page', error='Email and password are required'))
+
+        # check if student or admin exists
+        student = Student.query.filter_by(student_email=email, student_password=password).first()
+        admin = Admin.query.filter_by(admin_email=email, admin_password=password).first()
+
+        # if student
+        if student:
+            print(f'Student {student.student_name} has logged in')
+            login_user(student, remember=True)
+            # check if student is already in queue
+            queue = Queue.query.filter_by(admin_id=student.queue_ID).first()
+            if queue:
+                return redirect(url_for('studentview.waiting_page'))
+            else:
+                return redirect(url_for('studentview.student_dashboard'))
+        elif admin:
+            login_user(admin, remember=True)
+            admin.status = 'Online'
+            db.session.commit()
+            print(f'Admin {admin.admin_name} has logged in')
+            print(f'Admin {admin.admin_name} is online')
+            return redirect(url_for('adminview.admin_dashboard'))
+        else:
+            flash('Invalid email or password', 'warning')
+            return redirect(url_for('defaultview.login', error='Invalid email or password'))
+
+
 
     return render_template('login.html')
 
